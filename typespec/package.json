@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "compile": "tsp compile typespec/main.tsp"
+    "compile": "tsp compile main.tsp"
   },
   "devDependencies": {
     "@typespec/compiler": "^0.63.0",

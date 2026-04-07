@@ -2,10 +2,10 @@
 
 ## TypeSpec
 install:
-	npm install
+	npm --prefix typespec install
 
 compile: install
-	npm run compile
+	npm --prefix typespec run compile
 
 ## Backend — заполнить когда будет выбран стек
 dev-back:
