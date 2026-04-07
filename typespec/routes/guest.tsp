@@ -6,9 +6,9 @@ using TypeSpec.Rest;
 
 namespace CalendarBooking;
 
-@doc("Public endpoints available to anonymous guests. No authentication required.")
+@doc("Публичные эндпоинты для анонимных гостей. Авторизация не требуется.")
 interface GuestApi {
-  @doc("List all event types in their public form: id, name, description, durationMinutes.")
+  @doc("Получить список всех типов событий в публичном виде: id, name, description, durationMinutes.")
   @get
   @route("/event-types")
   listEventTypes(): {
@@ -17,11 +17,11 @@ interface GuestApi {
   };
 
   @doc("""
-    Get all time slots for a specific event type within the next 14 calendar days.
-    Slots are generated for weekdays Monday–Friday, between 09:00 and 18:00 (server local time).
-    Slot length equals the event type's durationMinutes.
-    Slots already covered by an existing booking (any event type) are marked available: false.
-    Returns 404 if the event type id does not exist.
+    Получить все временные слоты для указанного типа события в ближайшие 14 календарных дней.
+    Слоты генерируются по будням с понедельника по пятницу, в диапазоне 09:00–18:00 (локальное время сервера).
+    Длина слота равна durationMinutes типа события.
+    Слоты, перекрытые существующим бронированием (любого типа события), отмечаются как available: false.
+    Возвращает 404, если тип события с указанным id не существует.
   """)
   @get
   @route("/event-types/{id}/slots")
@@ -36,13 +36,13 @@ interface GuestApi {
   };
 
   @doc("""
-    Create a booking on the chosen slot.
-    Business rules enforced:
-    - The slot must fall on a weekday (Mon–Fri) between 09:00 and 18:00.
-    - The slot must be within the 14-day booking window from today.
-    - No other booking (any event type) may overlap the requested time range.
-    Returns 400 for invalid input, 404 if the event type does not exist,
-    and 409 Conflict if the slot is already taken.
+    Создать бронирование на выбранный слот.
+    Проверяемые бизнес-правила:
+    - Слот должен приходиться на будний день (Пн–Пт) в диапазоне 09:00–18:00.
+    - Слот должен попадать в окно бронирования — 14 дней от сегодня.
+    - Ни одно другое бронирование (любого типа события) не должно перекрывать запрошенный диапазон.
+    Возвращает 400 при некорректных входных данных, 404 если тип события не найден,
+    и 409 Conflict если слот уже занят.
   """)
   @post
   @route("/bookings")

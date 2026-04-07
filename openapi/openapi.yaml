@@ -9,8 +9,8 @@ paths:
     get:
       operationId: AdminApi_listBookings
       description: |2-
-          List all upcoming bookings across all event types, sorted by startTime ascending.
-          Upcoming means startTime is at or after the current server time.
+          Получить список предстоящих бронирований по всем типам событий, отсортированных по startTime по возрастанию.
+          Предстоящие — те, у которых startTime не раньше текущего времени сервера.
       parameters: []
       responses:
         '200':
@@ -25,9 +25,9 @@ paths:
     post:
       operationId: AdminApi_createEventType
       description: |2-
-          Create a new event type.
-          The owner supplies the id (slug) in the request body.
-          Returns 400 if the id is already taken or input is invalid.
+          Создать новый тип события.
+          Владелец указывает id (slug) в теле запроса.
+          Возвращает 400, если id уже занят или входные данные некорректны.
       parameters: []
       responses:
         '201':
@@ -50,7 +50,7 @@ paths:
               $ref: '#/components/schemas/CreateEventTypeRequest'
     get:
       operationId: AdminApi_listEventTypes
-      description: List all event types created by the owner.
+      description: Получить список всех типов событий, созданных владельцем.
       parameters: []
       responses:
         '200':
@@ -65,13 +65,13 @@ paths:
     post:
       operationId: GuestApi_createBooking
       description: |2-
-          Create a booking on the chosen slot.
-          Business rules enforced:
-          - The slot must fall on a weekday (Mon–Fri) between 09:00 and 18:00.
-          - The slot must be within the 14-day booking window from today.
-          - No other booking (any event type) may overlap the requested time range.
-          Returns 400 for invalid input, 404 if the event type does not exist,
-          and 409 Conflict if the slot is already taken.
+          Создать бронирование на выбранный слот.
+          Проверяемые бизнес-правила:
+          - Слот должен приходиться на будний день (Пн–Пт) в диапазоне 09:00–18:00.
+          - Слот должен попадать в окно бронирования — 14 дней от сегодня.
+          - Ни одно другое бронирование (любого типа события) не должно перекрывать запрошенный диапазон.
+          Возвращает 400 при некорректных входных данных, 404 если тип события не найден,
+          и 409 Conflict если слот уже занят.
       parameters: []
       responses:
         '201':
@@ -107,7 +107,7 @@ paths:
   /event-types:
     get:
       operationId: GuestApi_listEventTypes
-      description: 'List all event types in their public form: id, name, description, durationMinutes.'
+      description: 'Получить список всех типов событий в публичном виде: id, name, description, durationMinutes.'
       parameters: []
       responses:
         '200':
@@ -122,11 +122,11 @@ paths:
     get:
       operationId: GuestApi_getSlots
       description: |2-
-          Get all time slots for a specific event type within the next 14 calendar days.
-          Slots are generated for weekdays Monday–Friday, between 09:00 and 18:00 (server local time).
-          Slot length equals the event type's durationMinutes.
-          Slots already covered by an existing booking (any event type) are marked available: false.
-          Returns 404 if the event type id does not exist.
+          Получить все временные слоты для указанного типа события в ближайшие 14 календарных дней.
+          Слоты генерируются по будням с понедельника по пятницу, в диапазоне 09:00–18:00 (локальное время сервера).
+          Длина слота равна durationMinutes типа события.
+          Слоты, перекрытые существующим бронированием (любого типа события), отмечаются как available: false.
+          Возвращает 404, если тип события с указанным id не существует.
       parameters:
         - name: id
           in: path
@@ -157,11 +157,11 @@ components:
       properties:
         message:
           type: string
-          description: Human-readable description of why the request was rejected.
+          description: Описание причины отклонения запроса.
         code:
           type: string
-          description: Optional machine-readable error code.
-      description: Generic error response for 400 Bad Request.
+          description: Опциональный машиночитаемый код ошибки.
+      description: Ответ при ошибке 400 Bad Request.
     Booking:
       type: object
       required:
@@ -176,36 +176,36 @@ components:
       properties:
         id:
           type: string
-          description: System-generated unique booking identifier (UUID).
+          description: Уникальный идентификатор бронирования, сгенерированный системой (UUID).
         eventTypeId:
           allOf:
             - $ref: '#/components/schemas/Slug'
-          description: Identifier of the event type that was booked.
+          description: Идентификатор забронированного типа события.
         eventTypeName:
           type: string
-          description: Display name of the event type captured at booking time.
+          description: Название типа события, сохранённое на момент создания бронирования.
         guestName:
           type: string
-          description: Full name of the guest.
+          description: Полное имя гостя.
         guestEmail:
           type: string
-          description: Email address of the guest.
+          description: Адрес электронной почты гостя.
         note:
           type: string
-          description: Optional note or comment left by the guest.
+          description: Опциональная заметка или комментарий гостя.
         startTime:
           type: string
           format: date-time
-          description: Booking start time in UTC.
+          description: Время начала бронирования в UTC.
         endTime:
           type: string
           format: date-time
-          description: Booking end time in UTC.
+          description: Время окончания бронирования в UTC.
         createdAt:
           type: string
           format: date-time
-          description: Timestamp when the booking record was created, in UTC.
-      description: A confirmed booking created by a guest.
+          description: Временная метка создания записи о бронировании в UTC.
+      description: Подтверждённое бронирование, созданное гостем.
     ConflictError:
       type: object
       required:
@@ -213,12 +213,12 @@ components:
       properties:
         message:
           type: string
-          description: Human-readable description of the scheduling conflict.
+          description: Описание конфликта расписания.
         conflictingStartTime:
           type: string
           format: date-time
-          description: The conflicting start time in UTC, to help the guest pick another slot.
-      description: Error response for 409 Conflict — returned when a time slot is already booked.
+          description: Время начала конфликтующего слота в UTC, чтобы гость мог выбрать другой.
+      description: Ответ при ошибке 409 Conflict — возвращается, если временной слот уже занят.
     CreateBookingRequest:
       type: object
       required:
@@ -230,21 +230,21 @@ components:
         eventTypeId:
           allOf:
             - $ref: '#/components/schemas/Slug'
-          description: Identifier of the event type to book.
+          description: Идентификатор типа события для бронирования.
         startTime:
           type: string
           format: date-time
-          description: Desired start time in UTC. Must correspond to a valid available slot.
+          description: Желаемое время начала в UTC. Должно соответствовать доступному слоту.
         guestName:
           type: string
-          description: Full name of the guest.
+          description: Полное имя гостя.
         guestEmail:
           type: string
-          description: Email address of the guest.
+          description: Адрес электронной почты гостя.
         note:
           type: string
-          description: Optional note or comment for the owner.
-      description: Request body for creating a booking. The guest selects an event type and a start time.
+          description: Опциональная заметка или комментарий для владельца.
+      description: Тело запроса для создания бронирования. Гость выбирает тип события и время начала.
     CreateEventTypeRequest:
       type: object
       required:
@@ -256,18 +256,18 @@ components:
         id:
           allOf:
             - $ref: '#/components/schemas/Slug'
-          description: "Owner-chosen slug identifier. Must be unique. Example: 'strategy-session'."
+          description: "Slug-идентификатор, выбранный владельцем. Должен быть уникальным. Пример: 'strategy-session'."
         name:
           type: string
-          description: Short human-readable name.
+          description: Краткое название.
         description:
           type: string
-          description: Full description of the event.
+          description: Полное описание события.
         durationMinutes:
           type: integer
           format: int32
-          description: Duration in minutes.
-      description: Request body for creating a new event type. The owner supplies the id (slug) explicitly.
+          description: Длительность в минутах.
+      description: Тело запроса для создания типа события. Владелец явно указывает id (slug).
     EventType:
       type: object
       required:
@@ -279,18 +279,18 @@ components:
         id:
           allOf:
             - $ref: '#/components/schemas/Slug'
-          description: Owner-supplied slug identifier, e.g. 'intro-call'. Unique across all event types.
+          description: "Slug-идентификатор, заданный владельцем. Например: 'intro-call'. Уникален среди всех типов событий."
         name:
           type: string
-          description: Short human-readable name displayed to guests.
+          description: Краткое название, отображаемое гостям.
         description:
           type: string
-          description: Full description of what the event covers.
+          description: Полное описание того, что охватывает событие.
         durationMinutes:
           type: integer
           format: int32
-          description: Duration of the event in minutes, e.g. 30 or 60.
-      description: A type of bookable event defined by the calendar owner.
+          description: Длительность события в минутах, например 30 или 60.
+      description: Тип события, созданный владельцем календаря.
     NotFoundError:
       type: object
       required:
@@ -298,8 +298,8 @@ components:
       properties:
         message:
           type: string
-          description: Human-readable description of what was not found.
-      description: Error response for 404 Not Found.
+          description: Описание того, что не было найдено.
+      description: Ответ при ошибке 404 Not Found.
     Slot:
       type: object
       required:
@@ -310,18 +310,18 @@ components:
         startTime:
           type: string
           format: date-time
-          description: Slot start time in UTC.
+          description: Время начала слота в UTC.
         endTime:
           type: string
           format: date-time
-          description: Slot end time in UTC, derived from startTime + event durationMinutes.
+          description: Время окончания слота в UTC, вычисляется как startTime + durationMinutes события.
         available:
           type: boolean
-          description: True when the slot has no conflicting bookings.
-      description: A single time slot within the booking window.
+          description: True, если на этот слот нет конфликтующих бронирований.
+      description: Временной слот в окне доступных записей.
     Slug:
       type: string
-      description: A slug-style string identifier supplied by the owner (lowercase letters, digits, hyphens).
+      description: Slug-идентификатор, задаётся владельцем (строчные буквы, цифры, дефисы).
 servers:
   - url: http://localhost:8080
     description: Local development server

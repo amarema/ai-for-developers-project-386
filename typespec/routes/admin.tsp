@@ -6,13 +6,13 @@ using TypeSpec.Rest;
 
 namespace CalendarBooking;
 
-@doc("Admin endpoints accessible only by the calendar owner. No authentication required (single predefined owner).")
+@doc("Эндпоинты для владельца календаря. Авторизация не требуется (единственный предопределённый владелец).")
 @route("/admin")
 interface AdminApi {
   @doc("""
-    Create a new event type.
-    The owner supplies the id (slug) in the request body.
-    Returns 400 if the id is already taken or input is invalid.
+    Создать новый тип события.
+    Владелец указывает id (slug) в теле запроса.
+    Возвращает 400, если id уже занят или входные данные некорректны.
   """)
   @post
   @route("/event-types")
@@ -26,7 +26,7 @@ interface AdminApi {
     @body error: BadRequestError;
   };
 
-  @doc("List all event types created by the owner.")
+  @doc("Получить список всех типов событий, созданных владельцем.")
   @get
   @route("/event-types")
   listEventTypes(): {
@@ -35,8 +35,8 @@ interface AdminApi {
   };
 
   @doc("""
-    List all upcoming bookings across all event types, sorted by startTime ascending.
-    Upcoming means startTime is at or after the current server time.
+    Получить список предстоящих бронирований по всем типам событий, отсортированных по startTime по возрастанию.
+    Предстоящие — те, у которых startTime не раньше текущего времени сервера.
   """)
   @get
   @route("/bookings")

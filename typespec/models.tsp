@@ -5,130 +5,130 @@ using TypeSpec.Http;
 namespace CalendarBooking;
 
 // ---------------------------------------------------------------------------
-// Scalar aliases
+// Скалярные псевдонимы
 // ---------------------------------------------------------------------------
 
-@doc("A slug-style string identifier supplied by the owner (lowercase letters, digits, hyphens).")
+@doc("Slug-идентификатор, задаётся владельцем (строчные буквы, цифры, дефисы).")
 scalar Slug extends string;
 
 // ---------------------------------------------------------------------------
-// Domain models
+// Доменные модели
 // ---------------------------------------------------------------------------
 
-@doc("A type of bookable event defined by the calendar owner.")
+@doc("Тип события, созданный владельцем календаря.")
 model EventType {
-  @doc("Owner-supplied slug identifier, e.g. 'intro-call'. Unique across all event types.")
+  @doc("Slug-идентификатор, заданный владельцем. Например: 'intro-call'. Уникален среди всех типов событий.")
   id: Slug;
 
-  @doc("Short human-readable name displayed to guests.")
+  @doc("Краткое название, отображаемое гостям.")
   name: string;
 
-  @doc("Full description of what the event covers.")
+  @doc("Полное описание того, что охватывает событие.")
   description: string;
 
-  @doc("Duration of the event in minutes, e.g. 30 or 60.")
+  @doc("Длительность события в минутах, например 30 или 60.")
   durationMinutes: int32;
 }
 
-@doc("Request body for creating a new event type. The owner supplies the id (slug) explicitly.")
+@doc("Тело запроса для создания типа события. Владелец явно указывает id (slug).")
 model CreateEventTypeRequest {
-  @doc("Owner-chosen slug identifier. Must be unique. Example: 'strategy-session'.")
+  @doc("Slug-идентификатор, выбранный владельцем. Должен быть уникальным. Пример: 'strategy-session'.")
   id: Slug;
 
-  @doc("Short human-readable name.")
+  @doc("Краткое название.")
   name: string;
 
-  @doc("Full description of the event.")
+  @doc("Полное описание события.")
   description: string;
 
-  @doc("Duration in minutes.")
+  @doc("Длительность в минутах.")
   durationMinutes: int32;
 }
 
-@doc("A single time slot within the booking window.")
+@doc("Временной слот в окне доступных записей.")
 model Slot {
-  @doc("Slot start time in UTC.")
+  @doc("Время начала слота в UTC.")
   startTime: utcDateTime;
 
-  @doc("Slot end time in UTC, derived from startTime + event durationMinutes.")
+  @doc("Время окончания слота в UTC, вычисляется как startTime + durationMinutes события.")
   endTime: utcDateTime;
 
-  @doc("True when the slot has no conflicting bookings.")
+  @doc("True, если на этот слот нет конфликтующих бронирований.")
   available: boolean;
 }
 
-@doc("A confirmed booking created by a guest.")
+@doc("Подтверждённое бронирование, созданное гостем.")
 model Booking {
-  @doc("System-generated unique booking identifier (UUID).")
+  @doc("Уникальный идентификатор бронирования, сгенерированный системой (UUID).")
   id: string;
 
-  @doc("Identifier of the event type that was booked.")
+  @doc("Идентификатор забронированного типа события.")
   eventTypeId: Slug;
 
-  @doc("Display name of the event type captured at booking time.")
+  @doc("Название типа события, сохранённое на момент создания бронирования.")
   eventTypeName: string;
 
-  @doc("Full name of the guest.")
+  @doc("Полное имя гостя.")
   guestName: string;
 
-  @doc("Email address of the guest.")
+  @doc("Адрес электронной почты гостя.")
   guestEmail: string;
 
-  @doc("Optional note or comment left by the guest.")
+  @doc("Опциональная заметка или комментарий гостя.")
   note?: string;
 
-  @doc("Booking start time in UTC.")
+  @doc("Время начала бронирования в UTC.")
   startTime: utcDateTime;
 
-  @doc("Booking end time in UTC.")
+  @doc("Время окончания бронирования в UTC.")
   endTime: utcDateTime;
 
-  @doc("Timestamp when the booking record was created, in UTC.")
+  @doc("Временная метка создания записи о бронировании в UTC.")
   createdAt: utcDateTime;
 }
 
-@doc("Request body for creating a booking. The guest selects an event type and a start time.")
+@doc("Тело запроса для создания бронирования. Гость выбирает тип события и время начала.")
 model CreateBookingRequest {
-  @doc("Identifier of the event type to book.")
+  @doc("Идентификатор типа события для бронирования.")
   eventTypeId: Slug;
 
-  @doc("Desired start time in UTC. Must correspond to a valid available slot.")
+  @doc("Желаемое время начала в UTC. Должно соответствовать доступному слоту.")
   startTime: utcDateTime;
 
-  @doc("Full name of the guest.")
+  @doc("Полное имя гостя.")
   guestName: string;
 
-  @doc("Email address of the guest.")
+  @doc("Адрес электронной почты гостя.")
   guestEmail: string;
 
-  @doc("Optional note or comment for the owner.")
+  @doc("Опциональная заметка или комментарий для владельца.")
   note?: string;
 }
 
 // ---------------------------------------------------------------------------
-// Error models
+// Модели ошибок
 // ---------------------------------------------------------------------------
 
-@doc("Generic error response for 400 Bad Request.")
+@doc("Ответ при ошибке 400 Bad Request.")
 model BadRequestError {
-  @doc("Human-readable description of why the request was rejected.")
+  @doc("Описание причины отклонения запроса.")
   message: string;
 
-  @doc("Optional machine-readable error code.")
+  @doc("Опциональный машиночитаемый код ошибки.")
   code?: string;
 }
 
-@doc("Error response for 404 Not Found.")
+@doc("Ответ при ошибке 404 Not Found.")
 model NotFoundError {
-  @doc("Human-readable description of what was not found.")
+  @doc("Описание того, что не было найдено.")
   message: string;
 }
 
-@doc("Error response for 409 Conflict — returned when a time slot is already booked.")
+@doc("Ответ при ошибке 409 Conflict — возвращается, если временной слот уже занят.")
 model ConflictError {
-  @doc("Human-readable description of the scheduling conflict.")
+  @doc("Описание конфликта расписания.")
   message: string;
 
-  @doc("The conflicting start time in UTC, to help the guest pick another slot.")
+  @doc("Время начала конфликтующего слота в UTC, чтобы гость мог выбрать другой.")
   conflictingStartTime?: utcDateTime;
 }
