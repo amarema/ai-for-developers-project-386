@@ -1,0 +1,328 @@
+openapi: 3.0.0
+info:
+  title: Calendar Booking API
+  description: 'REST API for a calendar booking application. Supports two roles: the calendar owner (admin) and anonymous guests.'
+  version: 0.0.0
+tags: []
+paths:
+  /admin/bookings:
+    get:
+      operationId: AdminApi_listBookings
+      description: |2-
+          List all upcoming bookings across all event types, sorted by startTime ascending.
+          Upcoming means startTime is at or after the current server time.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+  /admin/event-types:
+    post:
+      operationId: AdminApi_createEventType
+      description: |2-
+          Create a new event type.
+          The owner supplies the id (slug) in the request body.
+          Returns 400 if the id is already taken or input is invalid.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventType'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventTypeRequest'
+    get:
+      operationId: AdminApi_listEventTypes
+      description: List all event types created by the owner.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+  /bookings:
+    post:
+      operationId: GuestApi_createBooking
+      description: |2-
+          Create a booking on the chosen slot.
+          Business rules enforced:
+          - The slot must fall on a weekday (Mon–Fri) between 09:00 and 18:00.
+          - The slot must be within the 14-day booking window from today.
+          - No other booking (any event type) may overlap the requested time range.
+          Returns 400 for invalid input, 404 if the event type does not exist,
+          and 409 Conflict if the slot is already taken.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+  /event-types:
+    get:
+      operationId: GuestApi_listEventTypes
+      description: 'List all event types in their public form: id, name, description, durationMinutes.'
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventType'
+  /event-types/{id}/slots:
+    get:
+      operationId: GuestApi_getSlots
+      description: |2-
+          Get all time slots for a specific event type within the next 14 calendar days.
+          Slots are generated for weekdays Monday–Friday, between 09:00 and 18:00 (server local time).
+          Slot length equals the event type's durationMinutes.
+          Slots already covered by an existing booking (any event type) are marked available: false.
+          Returns 404 if the event type id does not exist.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Slug'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+components:
+  schemas:
+    BadRequestError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable description of why the request was rejected.
+        code:
+          type: string
+          description: Optional machine-readable error code.
+      description: Generic error response for 400 Bad Request.
+    Booking:
+      type: object
+      required:
+        - id
+        - eventTypeId
+        - eventTypeName
+        - guestName
+        - guestEmail
+        - startTime
+        - endTime
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: System-generated unique booking identifier (UUID).
+        eventTypeId:
+          allOf:
+            - $ref: '#/components/schemas/Slug'
+          description: Identifier of the event type that was booked.
+        eventTypeName:
+          type: string
+          description: Display name of the event type captured at booking time.
+        guestName:
+          type: string
+          description: Full name of the guest.
+        guestEmail:
+          type: string
+          description: Email address of the guest.
+        note:
+          type: string
+          description: Optional note or comment left by the guest.
+        startTime:
+          type: string
+          format: date-time
+          description: Booking start time in UTC.
+        endTime:
+          type: string
+          format: date-time
+          description: Booking end time in UTC.
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the booking record was created, in UTC.
+      description: A confirmed booking created by a guest.
+    ConflictError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable description of the scheduling conflict.
+        conflictingStartTime:
+          type: string
+          format: date-time
+          description: The conflicting start time in UTC, to help the guest pick another slot.
+      description: Error response for 409 Conflict — returned when a time slot is already booked.
+    CreateBookingRequest:
+      type: object
+      required:
+        - eventTypeId
+        - startTime
+        - guestName
+        - guestEmail
+      properties:
+        eventTypeId:
+          allOf:
+            - $ref: '#/components/schemas/Slug'
+          description: Identifier of the event type to book.
+        startTime:
+          type: string
+          format: date-time
+          description: Desired start time in UTC. Must correspond to a valid available slot.
+        guestName:
+          type: string
+          description: Full name of the guest.
+        guestEmail:
+          type: string
+          description: Email address of the guest.
+        note:
+          type: string
+          description: Optional note or comment for the owner.
+      description: Request body for creating a booking. The guest selects an event type and a start time.
+    CreateEventTypeRequest:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - durationMinutes
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Slug'
+          description: "Owner-chosen slug identifier. Must be unique. Example: 'strategy-session'."
+        name:
+          type: string
+          description: Short human-readable name.
+        description:
+          type: string
+          description: Full description of the event.
+        durationMinutes:
+          type: integer
+          format: int32
+          description: Duration in minutes.
+      description: Request body for creating a new event type. The owner supplies the id (slug) explicitly.
+    EventType:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - durationMinutes
+      properties:
+        id:
+          allOf:
+            - $ref: '#/components/schemas/Slug'
+          description: Owner-supplied slug identifier, e.g. 'intro-call'. Unique across all event types.
+        name:
+          type: string
+          description: Short human-readable name displayed to guests.
+        description:
+          type: string
+          description: Full description of what the event covers.
+        durationMinutes:
+          type: integer
+          format: int32
+          description: Duration of the event in minutes, e.g. 30 or 60.
+      description: A type of bookable event defined by the calendar owner.
+    NotFoundError:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable description of what was not found.
+      description: Error response for 404 Not Found.
+    Slot:
+      type: object
+      required:
+        - startTime
+        - endTime
+        - available
+      properties:
+        startTime:
+          type: string
+          format: date-time
+          description: Slot start time in UTC.
+        endTime:
+          type: string
+          format: date-time
+          description: Slot end time in UTC, derived from startTime + event durationMinutes.
+        available:
+          type: boolean
+          description: True when the slot has no conflicting bookings.
+      description: A single time slot within the booking window.
+    Slug:
+      type: string
+      description: A slug-style string identifier supplied by the owner (lowercase letters, digits, hyphens).
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+    variables: {}
