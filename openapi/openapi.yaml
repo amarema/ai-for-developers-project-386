@@ -21,6 +21,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Booking'
+  /admin/bookings/{id}:
+    delete:
+      operationId: AdminApi_deleteBooking
+      description: Удалить бронирование по id. Возвращает 404, если бронирование не найдено.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
   /admin/event-types:
     post:
       operationId: AdminApi_createEventType

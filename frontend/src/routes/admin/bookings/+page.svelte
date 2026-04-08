@@ -1,13 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { adminListBookings } from '$lib/api.js';
+	import { adminListBookings, adminDeleteBooking } from '$lib/api.js';
 	import type { Booking } from '$lib/types.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 
 	let bookings = $state<Booking[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let deletingId = $state<string | null>(null);
 
 	onMount(async () => {
 		try {
@@ -26,6 +28,18 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
+	}
+
+	async function handleDelete(id: string) {
+		deletingId = id;
+		try {
+			await adminDeleteBooking(id);
+			bookings = bookings.filter((b) => b.id !== id);
+		} catch (e) {
+			error = (e as Error).message;
+		} finally {
+			deletingId = null;
+		}
 	}
 </script>
 
@@ -52,6 +66,7 @@
 					<Table.Head>Начало</Table.Head>
 					<Table.Head>Окончание</Table.Head>
 					<Table.Head>Заметка</Table.Head>
+					<Table.Head></Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -66,6 +81,16 @@
 						<Table.Cell>{formatDateTime(b.endTime)}</Table.Cell>
 						<Table.Cell class="text-muted-foreground max-w-xs truncate">
 							{b.note ?? '—'}
+						</Table.Cell>
+						<Table.Cell class="text-right">
+							<Button
+								variant="destructive"
+								size="sm"
+								disabled={deletingId === b.id}
+								onclick={() => handleDelete(b.id)}
+							>
+								{deletingId === b.id ? 'Удаление...' : 'Удалить'}
+							</Button>
 						</Table.Cell>
 					</Table.Row>
 				{/each}

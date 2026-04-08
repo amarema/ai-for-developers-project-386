@@ -141,6 +141,9 @@ type ServerInterface interface {
 	// (GET /admin/bookings)
 	AdminApiListBookings(c *gin.Context)
 
+	// (DELETE /admin/bookings/{id})
+	AdminApiDeleteBooking(c *gin.Context, id string)
+
 	// (GET /admin/event-types)
 	AdminApiListEventTypes(c *gin.Context)
 
@@ -177,6 +180,30 @@ func (siw *ServerInterfaceWrapper) AdminApiListBookings(c *gin.Context) {
 	}
 
 	siw.Handler.AdminApiListBookings(c)
+}
+
+// AdminApiDeleteBooking operation middleware
+func (siw *ServerInterfaceWrapper) AdminApiDeleteBooking(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.AdminApiDeleteBooking(c, id)
 }
 
 // AdminApiListEventTypes operation middleware
@@ -283,6 +310,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	}
 
 	router.GET(options.BaseURL+"/admin/bookings", wrapper.AdminApiListBookings)
+	router.DELETE(options.BaseURL+"/admin/bookings/:id", wrapper.AdminApiDeleteBooking)
 	router.GET(options.BaseURL+"/admin/event-types", wrapper.AdminApiListEventTypes)
 	router.POST(options.BaseURL+"/admin/event-types", wrapper.AdminApiCreateEventType)
 	router.POST(options.BaseURL+"/bookings", wrapper.GuestApiCreateBooking)

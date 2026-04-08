@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 	"time"
@@ -69,4 +70,15 @@ func (s *BookingStore) Save(b gen.Booking) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.items[b.Id] = b
+}
+
+// Delete удаляет бронирование по id. Возвращает ошибку, если не найдено.
+func (s *BookingStore) Delete(id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, exists := s.items[id]; !exists {
+		return fmt.Errorf("не найдено")
+	}
+	delete(s.items, id)
+	return nil
 }

@@ -62,3 +62,15 @@ export function adminCreateEventType(body: CreateEventTypeRequest): Promise<Even
 export function adminListBookings(): Promise<Booking[]> {
 	return request('/admin/bookings');
 }
+
+/** DELETE /admin/bookings/{id} — удалить бронирование */
+export async function adminDeleteBooking(id: string): Promise<void> {
+	const res = await fetch(`${BASE_URL}/admin/bookings/${encodeURIComponent(id)}`, {
+		method: 'DELETE',
+		headers: { 'Content-Type': 'application/json' }
+	});
+	if (!res.ok) {
+		const error = await res.json().catch(() => ({ message: res.statusText }));
+		throw new Error(error.message ?? res.statusText);
+	}
+}

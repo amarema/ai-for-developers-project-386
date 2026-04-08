@@ -1,7 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { Clock, Sun, Moon } from '@lucide/svelte';
+	import { CalendarDays, Sun, Moon } from '@lucide/svelte';
 	import { onMount } from 'svelte';
 
 	let { children } = $props();
@@ -37,22 +37,24 @@
 	</script>
 </svelte:head>
 
-<!-- Навигационная шапка -->
-<header class="border-b bg-background/95 backdrop-blur sticky top-0 z-10">
+<!-- Навигационная шапка с glassmorphism -->
+<header class="border-b border-primary/10 bg-background/70 backdrop-blur-xl sticky top-0 z-10 shadow-sm">
 	<div class="container mx-auto flex items-center justify-between px-4 py-3">
-		<a href="/" class="flex items-center gap-1.5 font-bold text-lg tracking-tight">
-			<Clock class="h-5 w-5 text-primary" />
-			Calendar
+		<a href="/" class="flex items-center gap-2 font-black text-lg tracking-tight group">
+			<span class="flex items-center justify-center h-8 w-8 rounded-xl bg-primary text-primary-foreground shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all">
+				<CalendarDays class="h-4 w-4" />
+			</span>
+			<span class="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Calendar</span>
 		</a>
-		<div class="flex items-center gap-4">
-			<nav class="flex gap-4 text-sm">
-				<a href="/book" class="text-muted-foreground hover:text-foreground transition-colors">Записаться</a>
-				<a href="/admin/event-types" class="text-muted-foreground hover:text-foreground transition-colors">Админка</a>
+		<div class="flex items-center gap-3">
+			<nav class="flex gap-1 text-sm">
+				<a href="/book" class="px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Записаться</a>
+				<a href="/admin/event-types" class="px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Админка</a>
 			</nav>
 			<button
 				onclick={toggleTheme}
 				aria-label="Переключить тему"
-				class="rounded-md p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+				class="rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 transition-all"
 			>
 				{#if dark}
 					<Sun class="h-4 w-4" />

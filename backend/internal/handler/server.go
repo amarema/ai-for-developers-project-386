@@ -91,6 +91,15 @@ func (s *Server) AdminApiListBookings(c *gin.Context) {
 	c.JSON(http.StatusOK, s.bStore.FindUpcoming())
 }
 
+// AdminApiDeleteBooking удаляет бронирование по id
+func (s *Server) AdminApiDeleteBooking(c *gin.Context, id string) {
+	if err := s.bStore.Delete(id); err != nil {
+		c.JSON(http.StatusNotFound, gen.NotFoundError{Message: "бронирование не найдено: " + id})
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 // writeBookingError пишет HTTP-ответ с ошибкой в зависимости от типа
 func writeBookingError(c *gin.Context, err error) {
 	switch e := err.(type) {

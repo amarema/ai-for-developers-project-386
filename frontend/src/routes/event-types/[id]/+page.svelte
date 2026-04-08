@@ -8,7 +8,7 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
-	import Badge from '$lib/components/ui/badge/badge.svelte';
+
 	import { goto } from '$app/navigation';
 	import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
 	import type { DateValue } from '@internationalized/date';
@@ -146,7 +146,10 @@
 
 {#if loading}
 	<div class="container mx-auto px-4 py-8">
-		<p class="text-muted-foreground">Загрузка...</p>
+		<div class="flex items-center gap-3 text-muted-foreground">
+			<span class="loading-spinner"></span>
+			<span>Загрузка...</span>
+		</div>
 	</div>
 {:else if error}
 	<div class="container mx-auto px-4 py-8">
@@ -154,56 +157,76 @@
 	</div>
 {:else}
 	<div class="container mx-auto px-4 py-8">
-		<h1 class="text-2xl font-bold tracking-tight mb-6">{eventType?.name}</h1>
+		<!-- Заголовок + шаги -->
+		<div class="mb-6 animate-fade-in-up">
+			<h1 class="text-3xl font-black tracking-tight mb-3">{eventType?.name}</h1>
+			<!-- Индикатор шагов -->
+			<div class="flex items-center gap-3 text-sm">
+				<span class="flex items-center gap-2 {step === 1 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
+					<span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all
+						{step === 1 ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground'}">1</span>
+					Выбор времени
+				</span>
+				<span class="flex-1 h-px bg-border max-w-8"></span>
+				<span class="flex items-center gap-2 {step === 2 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
+					<span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all
+						{step === 2 ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground'}">2</span>
+					Контактные данные
+				</span>
+			</div>
+		</div>
 
 		{#if step === 1}
 			<!-- Шаг 1: 3-колоночный лейаут — инфо | календарь | слоты -->
-			<div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_220px] gap-6">
+			<div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_220px] gap-5">
 				<!-- Левая панель: инфо о событии -->
 				<div class="space-y-4">
-					<div class="border rounded-xl p-4 space-y-3 bg-card">
+					<div class="glass rounded-2xl p-5 space-y-4">
 						<!-- Аватар хоста -->
-						<div class="flex items-center gap-2">
+						<div class="flex items-center gap-2.5">
 							{#if hostAvatarUrl}
-								<img src={hostAvatarUrl} alt={hostName} class="h-8 w-8 rounded-full object-cover" />
+								<img src={hostAvatarUrl} alt={hostName} class="h-9 w-9 rounded-full object-cover ring-2 ring-primary/20" />
 							{:else}
-								<div class="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">
+								<div class="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground text-xs font-bold">
 									{hostInitials}
 								</div>
 							{/if}
-							<span class="text-sm font-medium">{hostName}</span>
+							<span class="text-sm font-semibold">{hostName}</span>
 						</div>
 
 						<!-- Название + длительность -->
 						<div>
-							<p class="font-semibold">{eventType?.name}</p>
-							<Badge variant="secondary" class="mt-1 text-xs">{eventType?.durationMinutes} мин</Badge>
+							<p class="font-bold">{eventType?.name}</p>
+							<div class="mt-1.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+								<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+									<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+								</svg>
+								{eventType?.durationMinutes} мин
+							</div>
 						</div>
 
 						<!-- Описание -->
 						{#if eventType?.description}
-							<p class="text-sm text-muted-foreground">{eventType.description}</p>
+							<p class="text-sm text-muted-foreground leading-relaxed">{eventType.description}</p>
 						{/if}
 
 						<!-- Выбранная дата/время -->
-						<div class="pt-2 border-t space-y-1 text-sm">
-							<p class="text-muted-foreground">
-								Выбрана дата: <span class="text-foreground font-medium">
-									{selectedDate ? formatDate(selectedDate) : 'Не выбрана'}
-								</span>
-							</p>
-							<p class="text-muted-foreground">
-								Выбрано время: <span class="text-foreground font-medium">
-									{selectedSlot ? formatTime(selectedSlot.startTime) : 'Время не выбрано'}
-								</span>
-							</p>
+						<div class="pt-3 border-t border-border/50 space-y-2 text-sm">
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Дата</span>
+								<span class="font-medium">{selectedDate ? formatDate(selectedDate) : '—'}</span>
+							</div>
+							<div class="flex justify-between">
+								<span class="text-muted-foreground">Время</span>
+								<span class="font-medium {selectedSlot ? 'text-primary' : ''}">{selectedSlot ? formatTime(selectedSlot.startTime) : '—'}</span>
+							</div>
 						</div>
 					</div>
 				</div>
 
 				<!-- Центр: календарь -->
-				<div class="border rounded-xl p-4 bg-card">
-					<h2 class="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Календарь</h2>
+				<div class="glass rounded-2xl p-5">
+					<h2 class="text-xs font-bold mb-4 text-muted-foreground uppercase tracking-widest">Выберите дату</h2>
 					<Calendar
 						bind:value={selectedDate}
 						isDateDisabled={isDateDisabled}
@@ -213,30 +236,38 @@
 				</div>
 
 				<!-- Правая панель: слоты для выбранной даты -->
-				<div class="border rounded-xl p-4 bg-card">
-					<h2 class="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Статус слотов</h2>
+				<div class="glass rounded-2xl p-5">
+					<h2 class="text-xs font-bold mb-4 text-muted-foreground uppercase tracking-widest">Доступное время</h2>
 
 					{#if !selectedDate}
 						<p class="text-sm text-muted-foreground">Выберите дату в календаре</p>
 					{:else if slotsForSelectedDate.length === 0}
 						<p class="text-sm text-muted-foreground">Нет слотов на эту дату</p>
 					{:else}
-						<div class="space-y-1.5">
+						<div class="space-y-2">
 							{#each slotsForSelectedDate as slot (slot.startTime)}
 								<button
 									type="button"
 									disabled={!slot.available}
 									onclick={() => handleSlotSelect(slot)}
-									class="w-full flex items-center justify-between px-3 py-2 rounded-lg border text-sm transition-colors
+									class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all
 										{slot.available
 											? selectedSlot?.startTime === slot.startTime
-												? 'bg-primary text-primary-foreground border-primary'
-												: 'hover:bg-accent border-border'
-											: 'opacity-40 cursor-not-allowed border-border bg-muted text-muted-foreground'}"
+												? 'bg-primary text-primary-foreground border-primary shadow-sm'
+												: 'hover:bg-green-50 dark:hover:bg-green-950/40 hover:border-green-300 dark:hover:border-green-800 border-border'
+											: 'opacity-35 cursor-not-allowed border-border bg-muted/50 text-muted-foreground'}"
 								>
-									<span class="font-medium">{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</span>
-									<span class="text-xs {slot.available ? (selectedSlot?.startTime === slot.startTime ? 'opacity-80' : 'text-muted-foreground') : ''}">
-										{slot.available ? 'Свободно' : 'Занято'}
+									<!-- Пульсирующая точка для свободных слотов -->
+									{#if slot.available && selectedSlot?.startTime !== slot.startTime}
+										<span class="h-2 w-2 rounded-full bg-green-500 pulse-dot shrink-0"></span>
+									{:else if slot.available}
+										<span class="h-2 w-2 rounded-full bg-primary-foreground shrink-0"></span>
+									{:else}
+										<span class="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0"></span>
+									{/if}
+									<span>{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</span>
+									<span class="ml-auto text-xs opacity-70">
+										{slot.available ? 'свободно' : 'занято'}
 									</span>
 								</button>
 							{/each}
@@ -251,25 +282,27 @@
 				<Button
 					disabled={!selectedSlot}
 					onclick={() => (step = 2)}
+					class={selectedSlot ? 'btn-shimmer border-0' : ''}
 				>
-					Продолжить
+					Продолжить →
 				</Button>
 			</div>
 
 		{:else}
 			<!-- Шаг 2: форма бронирования -->
-			<div class="max-w-md space-y-6">
+			<div class="max-w-md space-y-5">
 				<!-- Выбранное время -->
-				<div class="border rounded-xl p-4 bg-muted/30 text-sm space-y-1">
-					<p class="font-medium">{eventType?.name}</p>
+				<div class="glass rounded-2xl p-5 animate-fade-in-up">
+					<p class="text-xs font-bold uppercase tracking-widest text-primary mb-2">Выбранное время</p>
+					<p class="font-bold text-lg">{eventType?.name}</p>
 					{#if selectedSlot}
-						<p class="text-muted-foreground">
+						<p class="text-muted-foreground text-sm mt-0.5">
 							{formatDateFull(selectedSlot.startTime)} — {formatTime(selectedSlot.endTime)}
 						</p>
 					{/if}
 				</div>
 
-				<form onsubmit={handleSubmit} class="space-y-4">
+				<form onsubmit={handleSubmit} class="glass rounded-2xl p-5 space-y-4 animate-fade-in-up animate-fade-in-up-delay-1">
 					<div class="space-y-1.5">
 						<Label for="name">Имя</Label>
 						<Input id="name" bind:value={guestName} required placeholder="Иван Иванов" />
@@ -289,10 +322,10 @@
 						<p class="text-sm text-destructive">{formError}</p>
 					{/if}
 
-					<div class="flex justify-between pt-2">
+					<div class="flex justify-between pt-1">
 						<Button type="button" variant="outline" onclick={() => (step = 1)}>Назад</Button>
-						<Button type="submit" disabled={submitting}>
-							{submitting ? 'Отправляем...' : 'Забронировать'}
+						<Button type="submit" disabled={submitting} class={!submitting ? 'btn-shimmer border-0' : ''}>
+							{submitting ? 'Отправляем...' : 'Забронировать →'}
 						</Button>
 					</div>
 				</form>

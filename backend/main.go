@@ -50,7 +50,7 @@ func main() {
 	// CORS — разрешить запросы с фронтенда
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173"},
-		AllowMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type"},
 	}))
 

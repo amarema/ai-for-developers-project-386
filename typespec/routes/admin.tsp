@@ -44,4 +44,16 @@ interface AdminApi {
     @statusCode statusCode: 200;
     @body bookings: Booking[];
   };
+
+  @doc("Удалить бронирование по id. Возвращает 404, если бронирование не найдено.")
+  @delete
+  @route("/bookings/{id}")
+  deleteBooking(
+    @path id: string,
+  ): {
+    @statusCode statusCode: 204;
+  } | {
+    @statusCode statusCode: 404;
+    @body error: NotFoundError;
+  };
 }
