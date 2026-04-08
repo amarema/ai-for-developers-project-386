@@ -19,7 +19,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `make install-front` — установить зависимости frontend
 - `make dev-front` — запустить frontend (SvelteKit, порт 5173)
 - `make mock-api` — запустить Prism mock-сервер (порт 8080, на базе openapi/openapi.yaml)
-- `make dev-back` — запустить backend (заглушка, заполнить при добавлении backend)
+- `make install-back` — установить зависимости backend (Go modules)
+- `make generate-back` — сгенерировать server-код из `openapi/openapi.yaml` через oapi-codegen
+- `make dev-back` — запустить backend (Go/Gin, порт 8080)
+- `make dev` — запустить backend и frontend одновременно
 
 ## TypeSpec → OpenAPI
 
@@ -42,6 +45,30 @@ typespec/
 - Доступные слоты: Пн–Пт, 09:00–18:00, окно 14 дней от сегодня
 - `id` типа события задаёт владелец (slug-формат), хранится в `Slug` scalar
 - Гость указывает имя, email и опциональную заметку при бронировании
+
+## Backend (Go/Gin)
+
+**Стек:** Go + Gin + oapi-codegen
+
+**Директория:** `backend/`
+
+**Архитектура:** handler → service → store (in-memory, thread-safe через RWMutex)
+
+**Структура:**
+
+```text
+backend/
+  main.go               # Gin setup, CORS (localhost:5173), маршрутизация
+  oapi-codegen.yaml     # конфигурация кодогенерации
+  gen/server.gen.go     # сгенерированный интерфейс сервера и типы из OpenAPI
+  internal/handler/     # реализация всех 6 эндпоинтов
+  internal/service/     # бизнес-логика (генерация слотов, валидация бронирований)
+  internal/store/       # in-memory хранилища EventType и Booking
+```
+
+**Цепочка кодогенерации:** TypeSpec → `openapi/openapi.yaml` → `gen/server.gen.go`
+
+При изменении TypeSpec нужно выполнить `make compile && make generate-back`.
 
 ## Frontend (SvelteKit)
 
