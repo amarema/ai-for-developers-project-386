@@ -1,0 +1,13 @@
+# Конфигурация генератора oapi-codegen
+# Генерирует типы и серверный интерфейс для Gin из openapi/openapi.yaml
+
+output-options:
+  skip-prune: false
+
+generate:
+  gin-server: true
+  models: true
+  embedded-spec: false
+
+output: gen/server.gen.go
+package: gen

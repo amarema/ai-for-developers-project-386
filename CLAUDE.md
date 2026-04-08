@@ -2,13 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Context
-
-This is a [Hexlet](https://hexlet.io) educational project repository (ai-for-developers-project-386). Design-First подход: TypeSpec → OpenAPI → frontend + backend.
-
 ## Соглашения
 
 Комментарии в коде (TypeSpec, frontend, backend) пишутся на русском языке.
+
+При возникновении неясностей или неоднозначностей агент должен задавать уточняющие вопросы пользователю, а не принимать решения самостоятельно.
 
 ## Makefile
 
@@ -18,8 +16,10 @@ This is a [Hexlet](https://hexlet.io) educational project repository (ai-for-dev
 
 - `make install` — установить зависимости TypeSpec
 - `make compile` — скомпилировать TypeSpec → `openapi/openapi.yaml`
+- `make install-front` — установить зависимости frontend
+- `make dev-front` — запустить frontend (SvelteKit, порт 5173)
+- `make mock-api` — запустить Prism mock-сервер (порт 8080, на базе openapi/openapi.yaml)
 - `make dev-back` — запустить backend (заглушка, заполнить при добавлении backend)
-- `make dev-front` — запустить frontend (заглушка, заполнить при добавлении frontend)
 
 ## TypeSpec → OpenAPI
 
@@ -43,6 +43,28 @@ typespec/
 - `id` типа события задаёт владелец (slug-формат), хранится в `Slug` scalar
 - Гость указывает имя, email и опциональную заметку при бронировании
 
-## CI
+## Frontend (SvelteKit)
 
-Automated tests are triggered by the `hexlet-check.yml` GitHub Actions workflow on every push. This file must not be deleted, edited, or renamed. Tests require the `HEXLET_ID` secret to be configured in the repository settings.
+**Стек:** SvelteKit + Vite + shadcn-svelte (vega preset) + Tailwind CSS v4
+
+**Директория:** `frontend/`
+
+**Маршруты:**
+- `/` — список типов событий (гость)
+- `/event-types/[id]` — выбор слота + форма бронирования (гость)
+- `/booking/success` — подтверждение бронирования
+- `/admin/event-types` — управление типами событий (admin)
+- `/admin/bookings` — предстоящие бронирования (admin)
+
+**Ключевые файлы:**
+- `frontend/src/lib/api.ts` — типизированный HTTP-клиент для всех 6 эндпоинтов
+- `frontend/src/lib/types.ts` — TypeScript-типы из OpenAPI-контракта
+- `frontend/src/app.css` — глобальные стили + CSS-переменные shadcn-svelte + @theme для Tailwind v4
+- `frontend/components.json` — конфигурация shadcn-svelte CLI (preset: vega)
+- `frontend/.env` — `VITE_API_BASE_URL=http://localhost:8080`
+
+**Запуск (два терминала):**
+```
+make mock-api   # терминал 1: Prism mock на :8080
+make dev-front  # терминал 2: SvelteKit на :5173
+```
