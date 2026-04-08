@@ -25,6 +25,7 @@
 	<title>Бронирование подтверждено</title>
 </svelte:head>
 
+<div class="container mx-auto px-4 py-8">
 <div class="max-w-md mx-auto space-y-6 text-center">
 	<div class="text-5xl">✓</div>
 	<div>
@@ -55,4 +56,5 @@
 	</Card.Root>
 
 	<Button href="/" variant="outline">Вернуться на главную</Button>
+</div>
 </div>

@@ -11,9 +11,37 @@ import (
 	"calendar-booking/internal/store"
 )
 
+// seedEventTypes заполняет хранилище начальными типами событий при старте сервера
+func seedEventTypes(s *store.EventTypeStore) {
+	seeds := []gen.EventType{
+		{
+			Id:              "intro-call",
+			Name:            "Первичная консультация",
+			Description:     "Знакомство и обсуждение ваших задач и целей.",
+			DurationMinutes: 30,
+		},
+		{
+			Id:              "follow-up",
+			Name:            "Повторная встреча",
+			Description:     "Обсуждение прогресса и следующих шагов.",
+			DurationMinutes: 30,
+		},
+		{
+			Id:              "deep-dive",
+			Name:            "Детальный разбор",
+			Description:     "Глубокий анализ задачи или проекта.",
+			DurationMinutes: 60,
+		},
+	}
+	for _, et := range seeds {
+		_ = s.Save(et)
+	}
+}
+
 func main() {
 	// Инициализация хранилищ в памяти
 	etStore := store.NewEventTypeStore()
+	seedEventTypes(etStore)
 	bStore := store.NewBookingStore()
 
 	// Настройка Gin
