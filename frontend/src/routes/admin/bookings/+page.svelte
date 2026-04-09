@@ -3,6 +3,7 @@
 	import { adminListBookings, adminDeleteBooking } from '$lib/api.js';
 	import type { Booking } from '$lib/types.js';
 	import * as Table from '$lib/components/ui/table/index.js';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 
@@ -10,6 +11,10 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let deletingId = $state<string | null>(null);
+
+	// Бронирование, выбранное для удаления (открывает диалог подтверждения)
+	let pendingBooking = $state<Booking | null>(null);
+	let dialogOpen = $state(false);
 
 	onMount(async () => {
 		try {
@@ -30,7 +35,11 @@
 		});
 	}
 
-	async function handleDelete(id: string) {
+	async function confirmDelete() {
+		if (!pendingBooking) return;
+		const id = pendingBooking.id;
+		pendingBooking = null;
+		dialogOpen = false;
 		deletingId = id;
 		try {
 			await adminDeleteBooking(id);
@@ -87,7 +96,7 @@
 								variant="destructive"
 								size="sm"
 								disabled={deletingId === b.id}
-								onclick={() => handleDelete(b.id)}
+								onclick={() => { pendingBooking = b; dialogOpen = true; }}
 							>
 								{deletingId === b.id ? 'Удаление...' : 'Удалить'}
 							</Button>
@@ -98,3 +107,33 @@
 		</Table.Root>
 	{/if}
 </div>
+
+<!-- Диалог подтверждения удаления -->
+<AlertDialog.Root bind:open={dialogOpen} onOpenChange={(open) => { if (!open) pendingBooking = null; }}>
+	<AlertDialog.Portal>
+		<AlertDialog.Overlay />
+		<AlertDialog.Content>
+			<AlertDialog.Header>
+				<AlertDialog.Title>Удалить бронирование?</AlertDialog.Title>
+				<AlertDialog.Description>
+					{#if pendingBooking}
+						<span class="block space-y-1">
+							<span class="block"><strong>Гость:</strong> {pendingBooking.guestName} ({pendingBooking.guestEmail})</span>
+							<span class="block"><strong>Тип события:</strong> {pendingBooking.eventTypeName}</span>
+							<span class="block"><strong>Время:</strong> {formatDateTime(pendingBooking.startTime)} — {formatDateTime(pendingBooking.endTime)}</span>
+							{#if pendingBooking.note}
+								<span class="block"><strong>Заметка:</strong> {pendingBooking.note}</span>
+							{/if}
+						</span>
+					{/if}
+				</AlertDialog.Description>
+			</AlertDialog.Header>
+			<AlertDialog.Footer>
+				<AlertDialog.Cancel>Отмена</AlertDialog.Cancel>
+				<AlertDialog.Action onclick={confirmDelete} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+					Удалить
+				</AlertDialog.Action>
+			</AlertDialog.Footer>
+		</AlertDialog.Content>
+	</AlertDialog.Portal>
+</AlertDialog.Root>
