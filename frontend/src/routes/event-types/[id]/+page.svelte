@@ -248,8 +248,7 @@
 									{:else}
 										<span class="h-2 w-2 rounded-full bg-green-500 pulse-dot shrink-0"></span>
 									{/if}
-									<span>{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</span>
-									<span class="ml-auto text-xs opacity-70">свободно</span>
+									<span class="whitespace-nowrap">{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</span>
 								</button>
 							{/each}
 						</div>
