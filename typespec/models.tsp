@@ -45,16 +45,13 @@ model CreateEventTypeRequest {
   durationMinutes: int32;
 }
 
-@doc("Временной слот в окне доступных записей.")
+@doc("Временной слот в окне доступных записей. Возвращаются только свободные слоты.")
 model Slot {
   @doc("Время начала слота в UTC.")
   startTime: utcDateTime;
 
   @doc("Время окончания слота в UTC, вычисляется как startTime + durationMinutes события.")
   endTime: utcDateTime;
-
-  @doc("True, если на этот слот нет конфликтующих бронирований.")
-  available: boolean;
 }
 
 @doc("Подтверждённое бронирование, созданное гостем.")

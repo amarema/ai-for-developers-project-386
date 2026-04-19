@@ -12,7 +12,6 @@ export interface EventType {
 export interface Slot {
 	startTime: string; // ISO 8601 / UTC
 	endTime: string;
-	available: boolean;
 }
 
 export interface Booking {

@@ -54,7 +54,7 @@
 				</p>
 			</div>
 		</div>
-		<h1 class="text-3xl font-black tracking-tight mb-1">Выберите тип события</h1>
+		<h1 class="text-2xl sm:text-3xl font-black tracking-tight mb-1">Выберите тип события</h1>
 		<p class="text-sm text-muted-foreground">Нажмите на карточку, чтобы открыть календарь и выбрать удобный слот.</p>
 	</div>
 

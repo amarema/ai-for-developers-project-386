@@ -114,11 +114,8 @@ type NotFoundError struct {
 	Message string `json:"message"`
 }
 
-// Slot Временной слот в окне доступных записей.
+// Slot Временной слот в окне доступных записей. Возвращаются только свободные слоты.
 type Slot struct {
-	// Available True, если на этот слот нет конфликтующих бронирований.
-	Available bool `json:"available"`
-
 	// EndTime Время окончания слота в UTC, вычисляется как startTime + durationMinutes события.
 	EndTime time.Time `json:"endTime"`
 
@@ -128,6 +125,12 @@ type Slot struct {
 
 // Slug Slug-идентификатор, задаётся владельцем (строчные буквы, цифры, дефисы).
 type Slug = string
+
+// GuestApiGetSlotsParams defines parameters for GuestApiGetSlots.
+type GuestApiGetSlotsParams struct {
+	// Date Дата в формате YYYY-MM-DD.
+	Date string `form:"date" json:"date"`
+}
 
 // AdminApiCreateEventTypeJSONRequestBody defines body for AdminApiCreateEventType for application/json ContentType.
 type AdminApiCreateEventTypeJSONRequestBody = CreateEventTypeRequest
@@ -156,8 +159,11 @@ type ServerInterface interface {
 	// (GET /event-types)
 	GuestApiListEventTypes(c *gin.Context)
 
+	// (GET /event-types/{id}/available-days)
+	GuestApiGetAvailableDays(c *gin.Context, id Slug)
+
 	// (GET /event-types/{id}/slots)
-	GuestApiGetSlots(c *gin.Context, id Slug)
+	GuestApiGetSlots(c *gin.Context, id Slug, params GuestApiGetSlotsParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -258,8 +264,8 @@ func (siw *ServerInterfaceWrapper) GuestApiListEventTypes(c *gin.Context) {
 	siw.Handler.GuestApiListEventTypes(c)
 }
 
-// GuestApiGetSlots operation middleware
-func (siw *ServerInterfaceWrapper) GuestApiGetSlots(c *gin.Context) {
+// GuestApiGetAvailableDays operation middleware
+func (siw *ServerInterfaceWrapper) GuestApiGetAvailableDays(c *gin.Context) {
 
 	var err error
 
@@ -279,7 +285,49 @@ func (siw *ServerInterfaceWrapper) GuestApiGetSlots(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GuestApiGetSlots(c, id)
+	siw.Handler.GuestApiGetAvailableDays(c, id)
+}
+
+// GuestApiGetSlots operation middleware
+func (siw *ServerInterfaceWrapper) GuestApiGetSlots(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id Slug
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GuestApiGetSlotsParams
+
+	// ------------- Required query parameter "date" -------------
+
+	if paramValue := c.Query("date"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument date is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameterWithOptions("form", false, true, "date", c.Request.URL.Query(), &params.Date, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter date: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GuestApiGetSlots(c, id, params)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -315,5 +363,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/admin/event-types", wrapper.AdminApiCreateEventType)
 	router.POST(options.BaseURL+"/bookings", wrapper.GuestApiCreateBooking)
 	router.GET(options.BaseURL+"/event-types", wrapper.GuestApiListEventTypes)
+	router.GET(options.BaseURL+"/event-types/:id/available-days", wrapper.GuestApiGetAvailableDays)
 	router.GET(options.BaseURL+"/event-types/:id/slots", wrapper.GuestApiGetSlots)
 }

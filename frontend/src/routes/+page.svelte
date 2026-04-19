@@ -34,7 +34,7 @@
 	></div>
 
 	<!-- Контент поверх blobs -->
-	<div class="container mx-auto px-4 py-20 flex flex-col lg:flex-row items-center gap-16 min-h-[calc(100vh-57px)] relative z-10">
+	<div class="container mx-auto max-w-6xl px-4 py-10 sm:py-14 lg:py-20 flex flex-col lg:flex-row items-center gap-8 lg:gap-16 min-h-[calc(100vh-57px)] relative z-10">
 
 		<!-- Левая часть: заголовок и CTA -->
 		<div class="flex-1 space-y-7 animate-fade-in-up">
@@ -45,11 +45,11 @@
 			</div>
 
 			<!-- Мегазаголовок -->
-			<h1 class="text-7xl font-black tracking-tighter leading-none bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 bg-clip-text text-transparent">
-				Calen<br/>dar
+			<h1 class="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tighter leading-none bg-gradient-to-br from-foreground via-foreground/90 to-foreground/50 bg-clip-text text-transparent">
+				Calendar
 			</h1>
 
-			<p class="text-xl text-muted-foreground max-w-md leading-relaxed animate-fade-in-up animate-fade-in-up-delay-1">
+			<p class="text-base sm:text-xl text-muted-foreground max-w-md leading-relaxed animate-fade-in-up animate-fade-in-up-delay-1">
 				Забронируйте встречу за минуту — выбирайте тип события и удобное время без лишних усилий.
 			</p>
 
@@ -67,7 +67,7 @@
 		</div>
 
 		<!-- Правая часть: glass-карточка с возможностями -->
-		<div class="flex-1 max-w-sm animate-fade-in-up animate-fade-in-up-delay-2">
+		<div class="flex-1 w-full max-w-sm animate-fade-in-up animate-fade-in-up-delay-2">
 			<div class="glass rounded-2xl p-6 shadow-xl">
 				<p class="text-xs font-bold uppercase tracking-widest text-primary mb-5">Возможности</p>
 				<ul class="space-y-5">

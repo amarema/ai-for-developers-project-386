@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -27,15 +28,33 @@ func (s *Server) GuestApiListEventTypes(c *gin.Context) {
 	c.JSON(http.StatusOK, s.etStore.FindAll())
 }
 
-// GuestApiGetSlots возвращает доступные слоты для типа события
-func (s *Server) GuestApiGetSlots(c *gin.Context, id gen.Slug) {
+// GuestApiGetAvailableDays возвращает даты с хотя бы одним свободным слотом
+func (s *Server) GuestApiGetAvailableDays(c *gin.Context, id gen.Slug) {
 	et, ok := s.etStore.FindByID(string(id))
 	if !ok {
 		c.JSON(http.StatusNotFound, gen.NotFoundError{Message: "тип события не найден: " + string(id)})
 		return
 	}
 
-	slots := service.GenerateSlots(et, s.bStore)
+	dates := service.GenerateAvailableDays(et, s.bStore)
+	c.JSON(http.StatusOK, dates)
+}
+
+// GuestApiGetSlots возвращает свободные слоты для типа события на конкретную дату
+func (s *Server) GuestApiGetSlots(c *gin.Context, id gen.Slug, params gen.GuestApiGetSlotsParams) {
+	et, ok := s.etStore.FindByID(string(id))
+	if !ok {
+		c.JSON(http.StatusNotFound, gen.NotFoundError{Message: "тип события не найден: " + string(id)})
+		return
+	}
+
+	date, err := time.ParseInLocation("2006-01-02", params.Date, time.Local)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gen.BadRequestError{Message: "некорректный формат даты, ожидается YYYY-MM-DD"})
+		return
+	}
+
+	slots := service.GenerateSlots(et, date, s.bStore)
 	c.JSON(http.StatusOK, slots)
 }
 

@@ -66,45 +66,47 @@
 	{:else if bookings.length === 0}
 		<p class="text-muted-foreground">Предстоящих бронирований нет.</p>
 	{:else}
-		<Table.Root>
-			<Table.Header>
-				<Table.Row>
-					<Table.Head>Гость</Table.Head>
-					<Table.Head>Email</Table.Head>
-					<Table.Head>Тип события</Table.Head>
-					<Table.Head>Начало</Table.Head>
-					<Table.Head>Окончание</Table.Head>
-					<Table.Head>Заметка</Table.Head>
-					<Table.Head></Table.Head>
-				</Table.Row>
-			</Table.Header>
-			<Table.Body>
-				{#each bookings as b (b.id)}
+		<div class="overflow-x-auto rounded-lg border border-border">
+			<Table.Root>
+				<Table.Header>
 					<Table.Row>
-						<Table.Cell class="font-medium">{b.guestName}</Table.Cell>
-						<Table.Cell class="text-muted-foreground">{b.guestEmail}</Table.Cell>
-						<Table.Cell>
-							<Badge variant="secondary">{b.eventTypeName}</Badge>
-						</Table.Cell>
-						<Table.Cell>{formatDateTime(b.startTime)}</Table.Cell>
-						<Table.Cell>{formatDateTime(b.endTime)}</Table.Cell>
-						<Table.Cell class="text-muted-foreground max-w-xs truncate">
-							{b.note ?? '—'}
-						</Table.Cell>
-						<Table.Cell class="text-right">
-							<Button
-								variant="destructive"
-								size="sm"
-								disabled={deletingId === b.id}
-								onclick={() => { pendingBooking = b; dialogOpen = true; }}
-							>
-								{deletingId === b.id ? 'Удаление...' : 'Удалить'}
-							</Button>
-						</Table.Cell>
+						<Table.Head>Гость</Table.Head>
+						<Table.Head class="hidden sm:table-cell">Email</Table.Head>
+						<Table.Head>Тип события</Table.Head>
+						<Table.Head>Начало</Table.Head>
+						<Table.Head class="hidden md:table-cell">Окончание</Table.Head>
+						<Table.Head class="hidden lg:table-cell">Заметка</Table.Head>
+						<Table.Head></Table.Head>
 					</Table.Row>
-				{/each}
-			</Table.Body>
-		</Table.Root>
+				</Table.Header>
+				<Table.Body>
+					{#each bookings as b (b.id)}
+						<Table.Row>
+							<Table.Cell class="font-medium">{b.guestName}</Table.Cell>
+							<Table.Cell class="hidden sm:table-cell text-muted-foreground">{b.guestEmail}</Table.Cell>
+							<Table.Cell>
+								<Badge variant="secondary">{b.eventTypeName}</Badge>
+							</Table.Cell>
+							<Table.Cell class="whitespace-nowrap">{formatDateTime(b.startTime)}</Table.Cell>
+							<Table.Cell class="hidden md:table-cell whitespace-nowrap">{formatDateTime(b.endTime)}</Table.Cell>
+							<Table.Cell class="hidden lg:table-cell text-muted-foreground max-w-xs truncate">
+								{b.note ?? '—'}
+							</Table.Cell>
+							<Table.Cell class="text-right">
+								<Button
+									variant="destructive"
+									size="sm"
+									disabled={deletingId === b.id}
+									onclick={() => { pendingBooking = b; dialogOpen = true; }}
+								>
+									{deletingId === b.id ? 'Удаление...' : 'Удалить'}
+								</Button>
+							</Table.Cell>
+						</Table.Row>
+					{/each}
+				</Table.Body>
+			</Table.Root>
+		</div>
 	{/if}
 </div>
 

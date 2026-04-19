@@ -82,26 +82,28 @@
 		{:else if eventTypes.length === 0}
 			<p class="text-muted-foreground">Типов событий ещё нет.</p>
 		{:else}
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						<Table.Head>ID (slug)</Table.Head>
-						<Table.Head>Название</Table.Head>
-						<Table.Head>Описание</Table.Head>
-						<Table.Head class="text-right">Длительность</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each eventTypes as et (et.id)}
+			<div class="overflow-x-auto rounded-lg border border-border">
+				<Table.Root>
+					<Table.Header>
 						<Table.Row>
-							<Table.Cell class="font-mono text-sm">{et.id}</Table.Cell>
-							<Table.Cell class="font-medium">{et.name}</Table.Cell>
-							<Table.Cell class="text-muted-foreground">{et.description}</Table.Cell>
-							<Table.Cell class="text-right">{et.durationMinutes} мин</Table.Cell>
+							<Table.Head>ID (slug)</Table.Head>
+							<Table.Head>Название</Table.Head>
+							<Table.Head class="hidden sm:table-cell">Описание</Table.Head>
+							<Table.Head class="text-right">Длит.</Table.Head>
 						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
+					</Table.Header>
+					<Table.Body>
+						{#each eventTypes as et (et.id)}
+							<Table.Row>
+								<Table.Cell class="font-mono text-sm">{et.id}</Table.Cell>
+								<Table.Cell class="font-medium">{et.name}</Table.Cell>
+								<Table.Cell class="hidden sm:table-cell text-muted-foreground">{et.description}</Table.Cell>
+								<Table.Cell class="text-right whitespace-nowrap">{et.durationMinutes} мин</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			</div>
 		{/if}
 	</div>
 

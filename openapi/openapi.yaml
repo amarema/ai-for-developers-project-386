@@ -137,21 +137,54 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EventType'
-  /event-types/{id}/slots:
+  /event-types/{id}/available-days:
     get:
-      operationId: GuestApi_getSlots
+      operationId: GuestApi_getAvailableDays
       description: |2-
-          Получить все временные слоты для указанного типа события в ближайшие 14 календарных дней.
-          Слоты генерируются по будням с понедельника по пятницу, в диапазоне 09:00–18:00 (локальное время сервера).
-          Длина слота равна durationMinutes типа события.
-          Слоты, перекрытые существующим бронированием (любого типа события), отмечаются как available: false.
-          Возвращает 404, если тип события с указанным id не существует.
+          Получить список дат (формат YYYY-MM-DD) на ближайшие 14 дней, в которые есть хотя бы один свободный слот.
+          Используется для первичной отрисовки календаря. Возвращает 404, если тип события не найден.
       parameters:
         - name: id
           in: path
           required: true
           schema:
             $ref: '#/components/schemas/Slug'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+  /event-types/{id}/slots:
+    get:
+      operationId: GuestApi_getSlots
+      description: |2-
+          Получить свободные слоты для указанного типа события на конкретную дату (YYYY-MM-DD).
+          Слоты генерируются по будням с 09:00 до 18:00 (локальное время сервера).
+          Возвращаются только слоты без конфликтующих бронирований.
+          Возвращает 404, если тип события не найден.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Slug'
+        - name: date
+          in: query
+          required: true
+          description: Дата в формате YYYY-MM-DD.
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -324,7 +357,6 @@ components:
       required:
         - startTime
         - endTime
-        - available
       properties:
         startTime:
           type: string
@@ -334,10 +366,7 @@ components:
           type: string
           format: date-time
           description: Время окончания слота в UTC, вычисляется как startTime + durationMinutes события.
-        available:
-          type: boolean
-          description: True, если на этот слот нет конфликтующих бронирований.
-      description: Временной слот в окне доступных записей.
+      description: Временной слот в окне доступных записей. Возвращаются только свободные слоты.
     Slug:
       type: string
       description: Slug-идентификатор, задаётся владельцем (строчные буквы, цифры, дефисы).

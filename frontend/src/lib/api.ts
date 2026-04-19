@@ -36,9 +36,14 @@ export function listEventTypes(): Promise<EventType[]> {
 	return request('/event-types');
 }
 
-/** GET /event-types/{id}/slots — доступные слоты на 14 дней вперёд */
-export function getSlots(id: string): Promise<Slot[]> {
-	return request(`/event-types/${encodeURIComponent(id)}/slots`);
+/** GET /event-types/{id}/available-days — даты с доступными слотами на 14 дней вперёд */
+export function getAvailableDays(id: string): Promise<string[]> {
+	return request(`/event-types/${encodeURIComponent(id)}/available-days`);
+}
+
+/** GET /event-types/{id}/slots?date=YYYY-MM-DD — свободные слоты на конкретную дату */
+export function getSlots(id: string, date: string): Promise<Slot[]> {
+	return request(`/event-types/${encodeURIComponent(id)}/slots?date=${encodeURIComponent(date)}`);
 }
 
 /** POST /bookings — создать бронирование */

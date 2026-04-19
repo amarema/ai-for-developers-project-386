@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { getSlots, createBooking, listEventTypes } from '$lib/api.js';
+	import { getAvailableDays, getSlots, createBooking, listEventTypes } from '$lib/api.js';
 	import type { Slot, EventType } from '$lib/types.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import Button from '$lib/components/ui/button/button.svelte';
@@ -10,7 +10,7 @@
 	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 
 	import { goto } from '$app/navigation';
-	import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
+	import { today, getLocalTimeZone } from '@internationalized/date';
 	import type { DateValue } from '@internationalized/date';
 
 	// Данные хоста из переменных окружения
@@ -27,7 +27,9 @@
 	const id = $derived($page.params.id as string);
 
 	let eventType = $state<EventType | null>(null);
-	let slots = $state<Slot[]>([]);
+	let availableDays = $state<Set<string>>(new Set());
+	let slotsForSelectedDate = $state<Slot[]>([]);
+	let loadingSlots = $state(false);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 
@@ -48,9 +50,9 @@
 
 	onMount(async () => {
 		try {
-			const [types, fetchedSlots] = await Promise.all([listEventTypes(), getSlots(id)]);
+			const [types, days] = await Promise.all([listEventTypes(), getAvailableDays(id)]);
 			eventType = types.find((t) => t.id === id) ?? null;
-			slots = fetchedSlots;
+			availableDays = new Set(days);
 		} catch (e) {
 			error = (e as Error).message;
 		} finally {
@@ -58,43 +60,25 @@
 		}
 	});
 
-	// Множество дат (YYYY-MM-DD) с доступными слотами
-	const availableDays = $derived.by(() => {
-		const days = new Set<string>();
-		for (const slot of slots) {
-			if (slot.available) {
-				days.add(slot.startTime.slice(0, 10));
-			}
-		}
-		return days;
-	});
-
-	// Слоты для выбранной даты
-	const slotsForSelectedDate = $derived.by(() => {
-		if (!selectedDate) return [];
-		const dayStr = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
-		return slots.filter((s) => s.startTime.slice(0, 10) === dayStr);
-	});
 
 	// Дни без доступных слотов — disabled в календаре
 	function isDateDisabled(date: DateValue): boolean {
 		const dayStr = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-		// Прошедшие дни и дни без слотов — недоступны
 		const todayVal = today(getLocalTimeZone());
 		if (date.compare(todayVal) < 0) return true;
 		return !availableDays.has(dayStr);
 	}
 
-	// Сбрасываем слот при смене даты
+	// При смене даты — сбрасываем слот и загружаем слоты для нового дня
 	$effect(() => {
-		selectedDate;
+		if (!selectedDate) return;
+		const dayStr = `${selectedDate.year}-${String(selectedDate.month).padStart(2, '0')}-${String(selectedDate.day).padStart(2, '0')}`;
 		selectedSlot = null;
+		loadingSlots = true;
+		getSlots(id, dayStr)
+			.then((s) => { slotsForSelectedDate = s; })
+			.finally(() => { loadingSlots = false; });
 	});
-
-	function handleSlotSelect(slot: Slot) {
-		if (!slot.available) return;
-		selectedSlot = slot;
-	}
 
 	function formatTime(iso: string) {
 		return new Date(iso).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
@@ -156,10 +140,10 @@
 		<p class="text-destructive">Ошибка: {error}</p>
 	</div>
 {:else}
-	<div class="container mx-auto px-4 py-8">
+	<div class="container mx-auto max-w-4xl px-4 py-8">
 		<!-- Заголовок + шаги -->
 		<div class="mb-6 animate-fade-in-up">
-			<h1 class="text-3xl font-black tracking-tight mb-3">{eventType?.name}</h1>
+			<h1 class="text-2xl sm:text-3xl font-black tracking-tight mb-3">{eventType?.name}</h1>
 			<!-- Индикатор шагов -->
 			<div class="flex items-center gap-3 text-sm">
 				<span class="flex items-center gap-2 {step === 1 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
@@ -177,8 +161,8 @@
 		</div>
 
 		{#if step === 1}
-			<!-- Шаг 1: 3-колоночный лейаут — инфо | календарь | слоты -->
-			<div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_220px] gap-5">
+			<!-- Шаг 1: адаптивный лейаут — инфо | календарь | слоты -->
+			<div class="grid grid-cols-1 md:grid-cols-[200px_1fr] lg:grid-cols-[260px_1fr_220px] gap-5">
 				<!-- Левая панель: инфо о событии -->
 				<div class="space-y-4">
 					<div class="glass rounded-2xl p-5 space-y-4">
@@ -236,11 +220,16 @@
 				</div>
 
 				<!-- Правая панель: слоты для выбранной даты -->
-				<div class="glass rounded-2xl p-5">
+				<div class="glass rounded-2xl p-5 md:col-span-2 lg:col-span-1">
 					<h2 class="text-xs font-bold mb-4 text-muted-foreground uppercase tracking-widest">Доступное время</h2>
 
 					{#if !selectedDate}
 						<p class="text-sm text-muted-foreground">Выберите дату в календаре</p>
+					{:else if loadingSlots}
+						<div class="flex items-center gap-2 text-muted-foreground text-sm">
+							<span class="loading-spinner"></span>
+							<span>Загрузка...</span>
+						</div>
 					{:else if slotsForSelectedDate.length === 0}
 						<p class="text-sm text-muted-foreground">Нет слотов на эту дату</p>
 					{:else}
@@ -248,27 +237,19 @@
 							{#each slotsForSelectedDate as slot (slot.startTime)}
 								<button
 									type="button"
-									disabled={!slot.available}
-									onclick={() => handleSlotSelect(slot)}
+									onclick={() => { selectedSlot = slot; }}
 									class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all
-										{slot.available
-											? selectedSlot?.startTime === slot.startTime
-												? 'bg-primary text-primary-foreground border-primary shadow-sm'
-												: 'hover:bg-green-50 dark:hover:bg-green-950/40 hover:border-green-300 dark:hover:border-green-800 border-border'
-											: 'opacity-35 cursor-not-allowed border-border bg-muted/50 text-muted-foreground'}"
+										{selectedSlot?.startTime === slot.startTime
+											? 'bg-primary text-primary-foreground border-primary shadow-sm'
+											: 'hover:bg-green-50 dark:hover:bg-green-950/40 hover:border-green-300 dark:hover:border-green-800 border-border'}"
 								>
-									<!-- Пульсирующая точка для свободных слотов -->
-									{#if slot.available && selectedSlot?.startTime !== slot.startTime}
-										<span class="h-2 w-2 rounded-full bg-green-500 pulse-dot shrink-0"></span>
-									{:else if slot.available}
+									{#if selectedSlot?.startTime === slot.startTime}
 										<span class="h-2 w-2 rounded-full bg-primary-foreground shrink-0"></span>
 									{:else}
-										<span class="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0"></span>
+										<span class="h-2 w-2 rounded-full bg-green-500 pulse-dot shrink-0"></span>
 									{/if}
 									<span>{formatTime(slot.startTime)} – {formatTime(slot.endTime)}</span>
-									<span class="ml-auto text-xs opacity-70">
-										{slot.available ? 'свободно' : 'занято'}
-									</span>
+									<span class="ml-auto text-xs opacity-70">свободно</span>
 								</button>
 							{/each}
 						</div>
