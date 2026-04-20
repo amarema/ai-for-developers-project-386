@@ -31,3 +31,13 @@ generate-back:
 
 dev-back:
 	cd backend && go run ./main.go
+
+## E2E-тесты (Playwright + Chromium)
+install-e2e: install-front
+	npm --prefix frontend exec playwright install --with-deps chromium
+
+test-e2e:
+	npm --prefix frontend run test:e2e
+
+test-e2e-ui:
+	npm --prefix frontend run test:e2e:ui

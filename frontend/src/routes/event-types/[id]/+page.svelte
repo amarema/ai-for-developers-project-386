@@ -146,13 +146,13 @@
 			<h1 class="text-2xl sm:text-3xl font-black tracking-tight mb-3">{eventType?.name}</h1>
 			<!-- Индикатор шагов -->
 			<div class="flex items-center gap-3 text-sm">
-				<span class="flex items-center gap-2 {step === 1 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
+				<span data-testid="step-indicator-1" data-active="{step === 1}" class="flex items-center gap-2 {step === 1 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
 					<span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all
 						{step === 1 ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground'}">1</span>
 					Выбор времени
 				</span>
 				<span class="flex-1 h-px bg-border max-w-8"></span>
-				<span class="flex items-center gap-2 {step === 2 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
+				<span data-testid="step-indicator-2" data-active="{step === 2}" class="flex items-center gap-2 {step === 2 ? 'text-primary font-semibold' : 'text-muted-foreground'}">
 					<span class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-all
 						{step === 2 ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted text-muted-foreground'}">2</span>
 					Контактные данные
@@ -209,7 +209,7 @@
 				</div>
 
 				<!-- Центр: календарь -->
-				<div class="glass rounded-2xl p-5">
+				<div data-testid="calendar-root" class="glass rounded-2xl p-5">
 					<h2 class="text-xs font-bold mb-4 text-muted-foreground uppercase tracking-widest">Выберите дату</h2>
 					<Calendar
 						bind:value={selectedDate}
@@ -236,6 +236,7 @@
 						<div class="space-y-2">
 							{#each slotsForSelectedDate as slot (slot.startTime)}
 								<button
+									data-testid="slot-button"
 									type="button"
 									onclick={() => { selectedSlot = slot; }}
 									class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all
@@ -260,6 +261,7 @@
 			<div class="flex justify-between mt-6">
 				<Button variant="outline" href="/book">Назад</Button>
 				<Button
+					data-testid="continue-button"
 					disabled={!selectedSlot}
 					onclick={() => (step = 2)}
 					class={selectedSlot ? 'btn-shimmer border-0' : ''}
@@ -299,12 +301,12 @@
 					</div>
 
 					{#if formError}
-						<p class="text-sm text-destructive">{formError}</p>
+						<p data-testid="form-error-message" class="text-sm text-destructive">{formError}</p>
 					{/if}
 
 					<div class="flex justify-between pt-1">
 						<Button type="button" variant="outline" onclick={() => (step = 1)}>Назад</Button>
-						<Button type="submit" disabled={submitting} class={!submitting ? 'btn-shimmer border-0' : ''}>
+						<Button data-testid="submit-booking-button" type="submit" disabled={submitting} class={!submitting ? 'btn-shimmer border-0' : ''}>
 							{submitting ? 'Отправляем...' : 'Забронировать →'}
 						</Button>
 					</div>

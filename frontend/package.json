@@ -9,16 +9,21 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:report": "playwright show-report"
 	},
 	"devDependencies": {
 		"@internationalized/date": "^3.12.0",
 		"@lucide/svelte": "^1.7.0",
+		"@playwright/test": "^1.59.1",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/canvas-confetti": "^1.9.0",
+		"@types/node": "^25.6.0",
 		"bits-ui": "^2.17.2",
 		"clsx": "^2.1.1",
 		"shadcn-svelte": "^1.2.7",

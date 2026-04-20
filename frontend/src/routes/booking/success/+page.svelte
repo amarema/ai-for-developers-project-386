@@ -72,7 +72,7 @@
 
 		<!-- Заголовок -->
 		<div class="animate-fade-in-up animate-fade-in-up-delay-1">
-			<h1 class="text-3xl font-black tracking-tight bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+			<h1 data-testid="success-heading" class="text-3xl font-black tracking-tight bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
 				Бронирование подтверждено!
 			</h1>
 			<p class="text-muted-foreground mt-2">Мы ждём вас в назначенное время.</p>
@@ -81,7 +81,7 @@
 		<!-- Карточка с деталями -->
 		<div class="glass rounded-2xl p-6 text-left border-green-200/60 dark:border-green-800/40 animate-fade-in-up animate-fade-in-up-delay-2">
 			<p class="text-xs font-bold uppercase tracking-widest text-green-600 dark:text-green-400 mb-4">Детали встречи</p>
-			<p class="text-xl font-bold mb-4">{eventName}</p>
+			<p data-testid="success-event-name" class="text-xl font-bold mb-4">{eventName}</p>
 			<div class="space-y-3 text-sm">
 				<div class="flex justify-between">
 					<span class="text-muted-foreground">Начало</span>
@@ -94,7 +94,7 @@
 				{#if bookingId}
 					<div class="pt-3 border-t border-border/50">
 						<span class="text-muted-foreground text-xs">ID: </span>
-						<code class="text-xs font-mono text-muted-foreground">{bookingId}</code>
+						<code data-testid="booking-id-display" class="text-xs font-mono text-muted-foreground">{bookingId}</code>
 					</div>
 				{/if}
 			</div>

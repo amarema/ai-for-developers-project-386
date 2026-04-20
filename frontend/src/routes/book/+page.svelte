@@ -73,6 +73,8 @@
 			{#each eventTypes as et, i (et.id)}
 				<a
 					href="/event-types/{et.id}"
+					data-testid="event-type-card"
+					data-id="{et.id}"
 					class="block group animate-fade-in-up"
 					style="animation-delay: {i * 0.08}s"
 				>

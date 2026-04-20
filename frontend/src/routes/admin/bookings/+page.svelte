@@ -81,7 +81,7 @@
 				</Table.Header>
 				<Table.Body>
 					{#each bookings as b (b.id)}
-						<Table.Row>
+						<Table.Row data-testid="booking-row">
 							<Table.Cell class="font-medium">{b.guestName}</Table.Cell>
 							<Table.Cell class="hidden sm:table-cell text-muted-foreground">{b.guestEmail}</Table.Cell>
 							<Table.Cell>
@@ -94,6 +94,7 @@
 							</Table.Cell>
 							<Table.Cell class="text-right">
 								<Button
+									data-testid="delete-booking-button"
 									variant="destructive"
 									size="sm"
 									disabled={deletingId === b.id}
@@ -114,7 +115,7 @@
 <AlertDialog.Root bind:open={dialogOpen} onOpenChange={(open) => { if (!open) pendingBooking = null; }}>
 	<AlertDialog.Portal>
 		<AlertDialog.Overlay />
-		<AlertDialog.Content>
+		<AlertDialog.Content data-testid="confirm-delete-dialog">
 			<AlertDialog.Header>
 				<AlertDialog.Title>Удалить бронирование?</AlertDialog.Title>
 				<AlertDialog.Description>
@@ -131,8 +132,8 @@
 				</AlertDialog.Description>
 			</AlertDialog.Header>
 			<AlertDialog.Footer>
-				<AlertDialog.Cancel>Отмена</AlertDialog.Cancel>
-				<AlertDialog.Action onclick={confirmDelete} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+				<AlertDialog.Cancel data-testid="confirm-delete-cancel">Отмена</AlertDialog.Cancel>
+				<AlertDialog.Action data-testid="confirm-delete-action" onclick={confirmDelete} class="bg-destructive text-destructive-foreground hover:bg-destructive/90">
 					Удалить
 				</AlertDialog.Action>
 			</AlertDialog.Footer>

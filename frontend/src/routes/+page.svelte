@@ -57,6 +57,7 @@
 			<div class="animate-fade-in-up animate-fade-in-up-delay-2">
 				<a
 					href="/book"
+					data-testid="hero-cta-button"
 					class="btn-shimmer inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 text-sm font-semibold text-white transition-transform"
 				>
 					<CalendarDays class="h-4 w-4" />

@@ -48,8 +48,8 @@
 		</a>
 		<div class="flex items-center gap-2 sm:gap-3">
 			<nav class="flex gap-0.5 sm:gap-1 text-sm">
-				<a href="/book" class="px-2 sm:px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Записаться</a>
-				<a href="/admin/event-types" class="px-2 sm:px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Админка</a>
+				<a href="/book" data-testid="nav-book-link" class="px-2 sm:px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Записаться</a>
+				<a href="/admin/event-types" data-testid="nav-admin-link" class="px-2 sm:px-3 py-1.5 rounded-lg font-medium text-muted-foreground hover:text-foreground hover:bg-primary/8 transition-all">Админка</a>
 			</nav>
 			<button
 				onclick={toggleTheme}

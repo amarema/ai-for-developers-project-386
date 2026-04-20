@@ -82,7 +82,7 @@
 		{:else if eventTypes.length === 0}
 			<p class="text-muted-foreground">Типов событий ещё нет.</p>
 		{:else}
-			<div class="overflow-x-auto rounded-lg border border-border">
+			<div data-testid="event-types-table" class="overflow-x-auto rounded-lg border border-border">
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>
@@ -94,7 +94,7 @@
 					</Table.Header>
 					<Table.Body>
 						{#each eventTypes as et (et.id)}
-							<Table.Row>
+							<Table.Row data-testid="event-type-row">
 								<Table.Cell class="font-mono text-sm">{et.id}</Table.Cell>
 								<Table.Cell class="font-medium">{et.name}</Table.Cell>
 								<Table.Cell class="hidden sm:table-cell text-muted-foreground">{et.description}</Table.Cell>
@@ -118,6 +118,7 @@
 					<Label for="et-id">ID (slug)</Label>
 					<Input
 						id="et-id"
+						data-testid="form-event-type-id"
 						bind:value={formId}
 						required
 						placeholder="intro-call"
@@ -128,13 +129,14 @@
 
 				<div class="space-y-1.5">
 					<Label for="et-name">Название</Label>
-					<Input id="et-name" bind:value={formName} required placeholder="Первичная консультация" />
+					<Input id="et-name" data-testid="form-event-type-name" bind:value={formName} required placeholder="Первичная консультация" />
 				</div>
 
 				<div class="space-y-1.5">
 					<Label for="et-desc">Описание</Label>
 					<Textarea
 						id="et-desc"
+						data-testid="form-event-type-desc"
 						bind:value={formDescription}
 						required
 						placeholder="Обсудим ваши задачи и цели."
@@ -146,6 +148,7 @@
 					<Label for="et-duration">Длительность (минуты)</Label>
 					<Input
 						id="et-duration"
+						data-testid="form-event-type-duration"
 						type="number"
 						bind:value={formDuration}
 						required
@@ -156,13 +159,13 @@
 				</div>
 
 				{#if formError}
-					<p class="text-sm text-destructive">{formError}</p>
+					<p data-testid="form-error-message" class="text-sm text-destructive">{formError}</p>
 				{/if}
 				{#if formSuccess}
-					<p class="text-sm text-green-600">Тип события создан!</p>
+					<p data-testid="form-success-message" class="text-sm text-green-600">Тип события создан!</p>
 				{/if}
 
-				<Button type="submit" disabled={submitting} class="w-full">
+				<Button data-testid="create-event-type-button" type="submit" disabled={submitting} class="w-full">
 					{submitting ? 'Создаём...' : 'Создать'}
 				</Button>
 			</form>
