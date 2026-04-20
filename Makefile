@@ -37,7 +37,7 @@ docker-build:
 	docker build -t calendar-booking .
 
 docker-run:
-	docker run -p 8080:8080 -e PORT=8080 calendar-booking
+	docker run -p 8080:8080 calendar-booking
 
 ## E2E-тесты (Playwright + Chromium)
 install-e2e: install-front

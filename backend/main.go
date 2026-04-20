@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -62,6 +63,16 @@ func main() {
 	// Регистрация маршрутов через сгенерированную функцию
 	srv := handler.NewServer(etStore, bStore)
 	gen.RegisterHandlers(r, srv)
+
+	// Раздача статических файлов фронтенда с SPA-фолбэком
+	r.NoRoute(func(c *gin.Context) {
+		filePath := filepath.Join("./static", c.Request.URL.Path)
+		if _, err := os.Stat(filePath); err == nil {
+			c.File(filePath)
+			return
+		}
+		c.File("./static/index.html")
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
