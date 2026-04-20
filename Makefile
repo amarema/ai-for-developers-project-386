@@ -1,4 +1,4 @@
-.PHONY: compile install install-front install-back generate-back dev-back dev-front mock-api dev
+.PHONY: compile install install-front install-back generate-back dev-back dev-front mock-api dev docker-build docker-run
 
 ## TypeSpec
 install:
@@ -31,6 +31,13 @@ generate-back:
 
 dev-back:
 	cd backend && go run ./main.go
+
+## Docker
+docker-build:
+	docker build -t calendar-booking .
+
+docker-run:
+	docker run -p 8080:8080 -e PORT=8080 calendar-booking
 
 ## E2E-тесты (Playwright + Chromium)
 install-e2e: install-front

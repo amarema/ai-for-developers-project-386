@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -47,9 +48,13 @@ func main() {
 	// Настройка Gin
 	r := gin.Default()
 
-	// CORS — разрешить запросы с фронтенда
+	// CORS — разрешить запросы с фронтенда (localhost и продакшн)
+	allowedOrigins := []string{"http://localhost:5173"}
+	if origin := os.Getenv("FRONTEND_ORIGIN"); origin != "" {
+		allowedOrigins = append(allowedOrigins, origin)
+	}
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
+		AllowOrigins: allowedOrigins,
 		AllowMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Content-Type"},
 	}))
@@ -58,8 +63,12 @@ func main() {
 	srv := handler.NewServer(etStore, bStore)
 	gen.RegisterHandlers(r, srv)
 
-	log.Println("Сервер запущен на :8080")
-	if err := r.Run(":8080"); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Сервер запущен на :%s", port)
+	if err := r.Run(":" + port); err != nil {
 		log.Fatal(err)
 	}
 }

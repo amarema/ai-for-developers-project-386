@@ -1,0 +1,10 @@
+frontend/
+node_modules/
+typespec/
+openapi/
+.git/
+.github/
+*.md
+**/test-results/
+**/playwright-report/
+backend/**/*_test.go
