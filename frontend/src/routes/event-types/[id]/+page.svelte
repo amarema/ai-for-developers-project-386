@@ -98,9 +98,21 @@
 		});
 	}
 
+	function isValidEmail(email: string): boolean {
+		const trimmed = email.trim();
+		if (!trimmed) return false;
+		// WHATWG-структура с поддержкой Unicode (кириллица и др.)
+		const re = /^[\p{L}\p{N}.!#$%&'*+\/=?^_`{|}~-]+@(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?\.)*[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?$/u;
+		return re.test(trimmed);
+	}
+
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		if (!selectedSlot) return;
+		if (!isValidEmail(guestEmail)) {
+			formError = 'Введите корректный email-адрес';
+			return;
+		}
 		submitting = true;
 		formError = null;
 		try {
@@ -292,7 +304,7 @@
 
 					<div class="space-y-1.5">
 						<Label for="email">Email</Label>
-						<Input id="email" type="email" bind:value={guestEmail} required placeholder="ivan@example.com" />
+						<Input id="email" type="text" bind:value={guestEmail} required placeholder="ivan@example.com" />
 					</div>
 
 					<div class="space-y-1.5">
