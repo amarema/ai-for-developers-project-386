@@ -101,13 +101,9 @@
 	function isValidEmail(email: string): boolean {
 		const trimmed = email.trim();
 		if (!trimmed) return false;
-		const atIndex = trimmed.lastIndexOf('@');
-		if (atIndex < 1) return false;
-		const local = trimmed.slice(0, atIndex);
-		const domain = trimmed.slice(atIndex + 1);
-		if (!local || !domain) return false;
-		if (!domain.includes('.')) return false;
-		return true;
+		// WHATWG-структура с поддержкой Unicode (кириллица и др.)
+		const re = /^[\p{L}\p{N}.!#$%&'*+\/=?^_`{|}~-]+@(?:[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?\.)*[\p{L}\p{N}](?:[\p{L}\p{N}-]{0,61}[\p{L}\p{N}])?$/u;
+		return re.test(trimmed);
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
