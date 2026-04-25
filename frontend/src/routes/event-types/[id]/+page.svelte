@@ -98,9 +98,25 @@
 		});
 	}
 
+	function isValidEmail(email: string): boolean {
+		const trimmed = email.trim();
+		if (!trimmed) return false;
+		const atIndex = trimmed.lastIndexOf('@');
+		if (atIndex < 1) return false;
+		const local = trimmed.slice(0, atIndex);
+		const domain = trimmed.slice(atIndex + 1);
+		if (!local || !domain) return false;
+		if (!domain.includes('.')) return false;
+		return true;
+	}
+
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		if (!selectedSlot) return;
+		if (!isValidEmail(guestEmail)) {
+			formError = 'Введите корректный email-адрес';
+			return;
+		}
 		submitting = true;
 		formError = null;
 		try {
@@ -292,7 +308,7 @@
 
 					<div class="space-y-1.5">
 						<Label for="email">Email</Label>
-						<Input id="email" type="email" bind:value={guestEmail} required placeholder="ivan@example.com" />
+						<Input id="email" type="text" bind:value={guestEmail} required placeholder="ivan@example.com" />
 					</div>
 
 					<div class="space-y-1.5">
